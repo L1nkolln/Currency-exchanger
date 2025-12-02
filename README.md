@@ -10,6 +10,10 @@ GET /currencies - получение всего списка валют
 GET /currency/{3-х значный код валюты} - получение конкретной валюты по коду
 
 POST /currencies - добавления новой валюты
+    Поля:
+        code - код валюты
+        fullName - полное название
+        sign - знак валюты
 
 GET /exchangeRates - получение всего списка курсов валют
 
@@ -26,3 +30,4 @@ GET /exchange?from=BASE_CURRENCY_CODE&to=TARGET_CURRENCY_CODE&amount=$AMOUNT
 BASE_CURRENCY_CODE - код валюты 1
 TARGET_CURRENCY_CODE - код валюты 2
 AMOUNT - количество
+
