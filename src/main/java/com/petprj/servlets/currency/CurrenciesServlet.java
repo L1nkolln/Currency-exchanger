@@ -1,0 +1,73 @@
+package com.petprj.servlets.currency;
+
+import com.petprj.dao.CurrencyDao;
+import com.petprj.model.Currency;
+import com.petprj.utils.ErrorHandler;
+import com.petprj.utils.HttpUtil;
+import com.petprj.utils.JsonUtil;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet("/currencies")
+public class CurrenciesServlet extends HttpServlet {
+
+    public final CurrencyDao currencyDao = new CurrencyDao();
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            List<Currency> currencies = currencyDao.findAll();
+            String json = JsonUtil.toJson(currencies);
+            HttpUtil.sendJsonResponse(resp, 200, json);
+        } catch (Exception e) {
+            ErrorHandler.handle(resp, e);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            String fullName = req.getParameter("fullName");
+            String code = req.getParameter("code");
+            String sign = req.getParameter("sign");
+
+            if (code == null || code.isBlank() ||
+                fullName == null || fullName.isBlank() ||
+                sign == null || sign.isBlank()) {
+                HttpUtil.sendError(resp, 400, "Fields 'code', 'fullName', 'sign' are empty");
+                return;
+            }
+
+            code = code.trim().toUpperCase();
+            if (code.length() != 3){
+                HttpUtil.sendError(resp, 400, "Code length must be 3 letters");
+                return;
+            }
+
+            Currency existing = currencyDao.findByCode(code);
+            if (existing != null) {
+                HttpUtil.sendError(resp, 409, "Currency with code =  " + code + " already exists");
+                return;
+            }
+
+            Currency currency = new Currency();
+            currency.setCode(code);
+            currency.setFullName(fullName.trim());
+            currency.setSign(sign.trim());
+
+            Currency created = currencyDao.create(currency);
+
+            String json = JsonUtil.toJson(created);
+            HttpUtil.sendJsonResponse(resp, 201, json);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            ErrorHandler.handle(resp, e);
+        }
+    }
+}
