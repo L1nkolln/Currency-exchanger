@@ -22,7 +22,7 @@ GET /exchangeRate/{3-х значный код валюты}{3-х значный 
 
 POST /exchangeRates - добавление нового обменного курса
 
-Поля:
+    Поля:
         baseCurrencyCode - валюта 1
         targetCurrencyCode - валюта 2
         rate - курс валюты
@@ -36,5 +36,6 @@ GET /exchange?from=BASE_CURRENCY_CODE&to=TARGET_CURRENCY_CODE&amount=$AMOUNT
 BASE_CURRENCY_CODE - код валюты 1
 TARGET_CURRENCY_CODE - код валюты 2
 AMOUNT - количество
+
 
 
