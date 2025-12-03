@@ -1,4 +1,4 @@
-package com.petprj.servlets;
+package com.petprj.servlets.exchangeRate;
 
 import com.petprj.dao.CurrencyDao;
 import com.petprj.dao.ExchangeRateDao;
@@ -6,6 +6,7 @@ import com.petprj.exeptions.NotFoundException;
 import com.petprj.model.Currency;
 import com.petprj.model.ExchangeRate;
 import com.petprj.utils.ErrorHandler;
+import com.petprj.utils.ExchangeResponse;
 import com.petprj.utils.HttpUtil;
 import com.petprj.utils.JsonUtil;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,6 +15,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @WebServlet("/exchangeRates")
@@ -28,7 +31,8 @@ public class GetAndAddExchangeRatesServlet extends HttpServlet {
             List<ExchangeRate> exchangeRates = exchangeRateDao.findAll();
             String json = JsonUtil.toJson(exchangeRates);
             HttpUtil.sendJsonResponse(resp, 200, json);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             ErrorHandler.handle(resp, e);
         }
     }
@@ -43,61 +47,61 @@ public class GetAndAddExchangeRatesServlet extends HttpServlet {
             if (baseCurrencyCode == null || baseCurrencyCode.isBlank() ||
                 targetCurrencyCode == null || targetCurrencyCode.isBlank() ||
                 rate == null || rate.isBlank()) {
-                HttpUtil.sendError(resp, 400, "Fields 'baseCurrencyCode', 'targetCurrencyCode', 'rate' are empty");
+                HttpUtil.sendError(resp, 400, "Поля 'baseCurrencyCode', 'targetCurrencyCode', 'rate' пустые");
                 return;
             }
 
             baseCurrencyCode = baseCurrencyCode.trim().toUpperCase();
             targetCurrencyCode = targetCurrencyCode.trim().toUpperCase();
-            if (baseCurrencyCode.length() != 3 || targetCurrencyCode.length() != 3){
-                HttpUtil.sendError(resp, 400, "Code length must be 3 letters");
+            if (!baseCurrencyCode.matches("^[A-Z]{3}")){
+                HttpUtil.sendError(resp, 400, "Код 1 валюты введен неверно");
+                return;
+            }
+            if (!targetCurrencyCode.matches("^[A-Z]{3}")){
+                HttpUtil.sendError(resp, 400, "Код 2 валюты введен неверно");
                 return;
             }
 
             if (baseCurrencyCode.equalsIgnoreCase(targetCurrencyCode)){
                 HttpUtil.sendError(resp, 400,
-                        "It is impossible to create an exchange rate because the codes are identical.");
+                        "Невозможно создать курс с одинаковым кодом");
                 return;
             }
 
             Currency baseCode = currencyDao.findByCode(baseCurrencyCode);
             Currency targetCode = currencyDao.findByCode(targetCurrencyCode);
-            if (baseCode == null || targetCode == null) {
-                HttpUtil.sendError(resp, 404, "Currency not found");
+            if (baseCode == null) {
+                HttpUtil.sendError(resp, 404, "Валюта 1 не найдена");
                 return;
             }
-
+            if (targetCode == null) {
+                HttpUtil.sendError(resp, 404, "Валюта 2 не найдена");
+                return;
+            }
             try {
                 ExchangeRate existing = exchangeRateDao.findByCodes(baseCurrencyCode, targetCurrencyCode);
                 if (existing != null) {
                     HttpUtil.sendError(resp, 409,
-                            "Rate =  " + baseCurrencyCode + "/" + targetCurrencyCode + " already exists");
+                            "Курс =  " + baseCurrencyCode + "/" + targetCurrencyCode + " уже существует");
                     return;
                 }
             } catch (NotFoundException ignore) {
 
             }
 
-
             rate = rate.trim().replace(',', '.');
-            if(!rate.matches("\\d+(\\.\\d+)?")){
-                HttpUtil.sendError(resp, 400, "Rate must be a valid number");
+            if (!rate.matches("\\d+(\\.\\d+)?")){
+                HttpUtil.sendError(resp, 400, "Курс должен быть больше нуля");
                 return;
             }
-            double parseDouble = Double.parseDouble(rate);
-            if (parseDouble <= 0){
-                HttpUtil.sendError(resp, 400, "Rate must be a positive number");
+            BigDecimal parseDouble = new BigDecimal(rate).setScale(6, RoundingMode.HALF_UP);
+            if (parseDouble.compareTo(BigDecimal.ZERO) <= 0){
+                HttpUtil.sendError(resp, 400, "Курс не может быть нулем");
                 return;
             }
 
-            ExchangeRate exchangeRate = new ExchangeRate();
-            exchangeRate.setBaseCurrencyId(baseCode.getId());
-            exchangeRate.setTargetCurrencyId(targetCode.getId());
-            exchangeRate.setRate(parseDouble);
-
-            ExchangeRate created = exchangeRateDao.create(exchangeRate);
-
-            String json = JsonUtil.toJson(created);
+            ExchangeResponse responseObj = new ExchangeResponse(baseCode, targetCode, parseDouble);
+            String json = JsonUtil.toJson(responseObj);
             HttpUtil.sendJsonResponse(resp, 201, json);
         } catch (Exception e) {
             ErrorHandler.handle(resp, e);

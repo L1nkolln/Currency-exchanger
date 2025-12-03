@@ -72,7 +72,7 @@ public class CurrencyDao implements Dao<Integer, Currency> {
             if (resultSet.next()) {
                 return buildCurrency(resultSet);
             } else {
-                throw new NotFoundException("Валюта с code= " + code + " не найдена");
+                return null;
             }
         } catch (SQLException e) {
             throw new DatabaseException(e);
@@ -80,7 +80,7 @@ public class CurrencyDao implements Dao<Integer, Currency> {
     }
 
     private static final String UPDATE = """
-            UPDATE currency 
+            UPDATE currency
             SET full_name = ?, code = ?, sign = ? 
             WHERE id = ?
             """;

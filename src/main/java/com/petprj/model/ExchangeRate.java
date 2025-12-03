@@ -1,18 +1,24 @@
 package com.petprj.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
-@JsonPropertyOrder({"id", "baseCurrencyId", "targetCurrencyId", "rate"})
+@JsonPropertyOrder({"id", "baseCurrency", "targetCurrency", "rate"})
 public class ExchangeRate {
 
     private Integer id;
+    @JsonIgnore
     private int baseCurrencyId;
+    @JsonIgnore
     private int targetCurrencyId;
-    private double rate;
+    private BigDecimal rate;
+    private Currency baseCurrency;
+    private Currency targetCurrency;
 
-    public ExchangeRate(Integer id, int baseCurrencyId, int targetCurrencyId, double rate) {
+    public ExchangeRate(Integer id, int baseCurrencyId, int targetCurrencyId, BigDecimal rate) {
         this.id = id;
         this.baseCurrencyId = baseCurrencyId;
         this.targetCurrencyId = targetCurrencyId;
@@ -22,30 +28,6 @@ public class ExchangeRate {
     public ExchangeRate() {
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ExchangeRate that)) return false;
-        return id == that.id &&
-               baseCurrencyId == that.baseCurrencyId &&
-               targetCurrencyId == that.targetCurrencyId &&
-               Double.compare(rate, that.rate) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, baseCurrencyId, targetCurrencyId, rate);
-    }
-
-    @Override
-    public String toString() {
-        return "ExchangeRate{" +
-               "id=" + id +
-               ", baseCurrencyId=" + baseCurrencyId +
-               ", targetCurrencyId=" + targetCurrencyId +
-               ", rate=" + rate +
-               '}';
-    }
 
     public Integer getId() {
         return id;
@@ -59,7 +41,7 @@ public class ExchangeRate {
         return targetCurrencyId;
     }
 
-    public double getRate() {
+    public BigDecimal getRate() {
         return rate;
     }
 
@@ -75,7 +57,51 @@ public class ExchangeRate {
         this.targetCurrencyId = targetCurrencyId;
     }
 
-    public void setRate(double rate) {
-        this.rate = rate;
+    public void setRate(BigDecimal rate) {
+        if (rate != null) {
+            this.rate = rate.setScale(2, BigDecimal.ROUND_HALF_UP);
+        }else {
+            this.rate = null;
+        }
+    }
+
+    public Currency getBaseCurrency() {
+        return baseCurrency;
+    }
+
+    public void setBaseCurrency(Currency baseCurrency) {
+        this.baseCurrency = baseCurrency;
+    }
+
+    public Currency getTargetCurrency() {
+        return targetCurrency;
+    }
+
+    public void setTargetCurrency(Currency targetCurrency) {
+        this.targetCurrency = targetCurrency;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExchangeRate that)) return false;
+        return baseCurrencyId == that.baseCurrencyId && targetCurrencyId == that.targetCurrencyId && Objects.equals(id, that.id) && Objects.equals(rate, that.rate) && Objects.equals(baseCurrency, that.baseCurrency) && Objects.equals(targetCurrency, that.targetCurrency);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, baseCurrencyId, targetCurrencyId, rate, baseCurrency, targetCurrency);
+    }
+
+    @Override
+    public String toString() {
+        return "ExchangeRate{" +
+               "id=" + id +
+               ", baseCurrencyId=" + baseCurrencyId +
+               ", targetCurrencyId=" + targetCurrencyId +
+               ", rate=" + rate +
+               ", baseCurrency=" + baseCurrency +
+               ", targetCurrency=" + targetCurrency +
+               '}';
     }
 }

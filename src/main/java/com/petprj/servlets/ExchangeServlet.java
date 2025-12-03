@@ -9,7 +9,6 @@ import com.petprj.utils.ErrorHandler;
 import com.petprj.utils.ExchangeResponse;
 import com.petprj.utils.HttpUtil;
 import com.petprj.utils.JsonUtil;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+//changed
 // http://localhost:8080/currencyexchanger_war_exploded/exchange?from=USD&to=BYN&amount=2
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -27,7 +27,7 @@ public class ExchangeServlet extends HttpServlet {
     private final CurrencyDao currencyDao = new CurrencyDao();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws  IOException {
         try {
             String from = req.getParameter("from");
             String to = req.getParameter("to");
@@ -49,8 +49,8 @@ public class ExchangeServlet extends HttpServlet {
                 HttpUtil.sendError(resp, 400, "Incorrect amount");
                 return;
             }
-            double parsedAmount = Double.parseDouble(amountParamStr);
-            if (parsedAmount <= 0) {
+            BigDecimal parsedAmount = new BigDecimal(amountParamStr).setScale(6, RoundingMode.HALF_UP);
+            if (parsedAmount.compareTo(BigDecimal.ZERO) <= 0) {
                 HttpUtil.sendError(resp, 400, "Incorrect amount");
                 return;
             }
@@ -65,7 +65,7 @@ public class ExchangeServlet extends HttpServlet {
                 return;
             }
 
-            Double rate = null;
+            BigDecimal rate = null;
 
             ExchangeRate directAB = safeFindByCodes(from, to);
             ExchangeRate directBA = safeFindByCodes(to, from);
@@ -73,7 +73,7 @@ public class ExchangeServlet extends HttpServlet {
                 rate = directAB.getRate();
             }
             if (directAB == null && directBA != null) {
-                rate = 1 / directBA.getRate();
+                rate = BigDecimal.ONE.divide(directBA.getRate(), 6, RoundingMode.HALF_UP);
             }
 //////////////////////////////////////////////////////////////
             if (rate == null) {
@@ -91,15 +91,15 @@ public class ExchangeServlet extends HttpServlet {
                 if (usdB == null) usdB = safeFindByCodes(to, "USD");
 
                 if (usdA != null && usdB != null) {
-                    double usdToA = (usdA.getBaseCurrencyId() == usdId)
+                    BigDecimal usdToA = (usdA.getBaseCurrencyId() == usdId)
                             ? usdA.getRate()
-                            : 1/ usdA.getRate();
+                            : BigDecimal.ONE.divide(usdA.getRate(), 6, RoundingMode.HALF_UP);
 
-                    double usdToB = (usdB.getBaseCurrencyId() == usdId)
+                    BigDecimal usdToB = (usdB.getBaseCurrencyId() == usdId)
                             ? usdB.getRate()
-                            : 1/ usdB.getRate();
+                            : BigDecimal.ONE.divide(usdB.getRate(), 6, RoundingMode.HALF_UP);
 
-                    rate = usdToB / usdToA;
+                    rate = usdToB.divide(usdToA, 6, RoundingMode.HALF_UP);
                 }
             }
 
@@ -108,11 +108,7 @@ public class ExchangeServlet extends HttpServlet {
                 return;
             }
 
-//            double result = parsedAmount * rate;
-            double result = BigDecimal
-                    .valueOf(parsedAmount * rate)
-                    .setScale(2, RoundingMode.HALF_UP)
-                    .doubleValue();
+            BigDecimal result = parsedAmount.multiply(rate).setScale(6, RoundingMode.HALF_UP);
 
             ExchangeResponse responseObj = new ExchangeResponse(fromCode, toCode, rate, parsedAmount, result);
 

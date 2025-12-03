@@ -15,6 +15,5 @@ public class ErrorHandler {
         } else {
             HttpUtil.sendError(resp, 500, "Internal server error");
         }
-        e.printStackTrace();
     }
 }

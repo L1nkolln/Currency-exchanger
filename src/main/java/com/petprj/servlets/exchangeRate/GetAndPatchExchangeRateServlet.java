@@ -1,17 +1,19 @@
-package com.petprj.servlets;
+package com.petprj.servlets.exchangeRate;
 
 import com.petprj.dao.ExchangeRateDao;
 import com.petprj.model.ExchangeRate;
 import com.petprj.utils.ErrorHandler;
+import com.petprj.utils.ExchangeResponse;
 import com.petprj.utils.HttpUtil;
 import com.petprj.utils.JsonUtil;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.stream.Collectors;
 
 @WebServlet("/exchangeRate/*")
@@ -24,11 +26,12 @@ public class GetAndPatchExchangeRateServlet extends HttpServlet {
         try {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || pathInfo.length() <= 1) {
-                HttpUtil.sendError(resp, 404, "Currency pair not provided");
+                HttpUtil.sendError(resp, 400, "Не введена валютная пара");
+                return;
             }
             String pair = pathInfo.substring(1).toUpperCase();
-            if (pair.length() != 6) {
-                HttpUtil.sendError(resp, 400, "Invalid pair format. Expected format: USDEUR");
+            if (!pair.matches("^[A-Z]{6}")) {
+                HttpUtil.sendError(resp, 400, "Введен неправильный формат валютной пары. Ожидается формат: USDEUR");
                 return;
             }
             String baseCode = pair.substring(0,3);
@@ -37,28 +40,28 @@ public class GetAndPatchExchangeRateServlet extends HttpServlet {
             ExchangeRate rate = exchangeRateDao.findByCodes(baseCode, targetCode);
 
             if (rate == null) {
-                HttpUtil.sendError(resp, 404, "Pair not found");
+                HttpUtil.sendError(resp, 404, "Валютная пара не найдена");
                 return;
             }
 
             String json = JsonUtil.toJson(rate);
             HttpUtil.sendJsonResponse(resp, 200, json);
         } catch (Exception e) {
+            e.printStackTrace();
             ErrorHandler.handle(resp, e);
         }
     }
 
-//    @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || pathInfo.length() <= 1) {
-                HttpUtil.sendError(resp, 404, "Currency pair not provided");
+                HttpUtil.sendError(resp, 404, "Не введена валютная пара");
                 return;
             }
             String pair = pathInfo.substring(1).toUpperCase();
-            if (pair.length() != 6) {
-                HttpUtil.sendError(resp, 400, "Invalid pair format. Expected format: USDEUR");
+            if (!pair.matches("^[A-Z]{6}")) {
+                HttpUtil.sendError(resp, 400, "Введен неправильный формат валютной пары. Ожидается формат: USDEUR");
                 return;
             }
             String baseCode = pair.substring(0,3);
@@ -66,30 +69,34 @@ public class GetAndPatchExchangeRateServlet extends HttpServlet {
 
             ExchangeRate updated = exchangeRateDao.findByCodes(baseCode, targetCode);
             if (updated == null) {
-                HttpUtil.sendError(resp, 404, "Pair not found");
+                HttpUtil.sendError(resp, 404, "Валютная пара не найдена");
                 return;
             }
 
-            String rate = req.getReader()
+            String body = req.getReader()
                     .lines()
-                    .collect(Collectors.joining());
-            if (rate == null || rate.isBlank()) {
-                HttpUtil.sendError(resp, 400, "Invalid rate");
-                return;
-            }
-            String[] parts = rate.split("=");
-            if (parts.length != 2 || !parts[0].equals("rate")) {
-                HttpUtil.sendError(resp, 400, "Invalid form data");
+                    .collect(Collectors.joining("&"));
+            String rate = null;
+            for (String param : body.split("&")) {
+                String[] keyValue = param.split("=");
+                if (keyValue.length == 2 && keyValue[0].equals("rate")) {
+                    rate = java.net.URLDecoder.decode(keyValue[1], "UTF-8");
+                    break;
+                }
             }
 
-            String rateStr = parts[1].trim().replace(',', '.');
-            if (!rateStr.matches("\\d+(\\.\\d+)?")){
-                HttpUtil.sendError(resp, 400, "Rate must be a valid number");
+            if (rate == null || rate.isBlank()) {
+                HttpUtil.sendError(resp, 400, "Не введен курс");
                 return;
             }
-            double parseDouble = Double.parseDouble(rateStr);
-            if (parseDouble <= 0) {
-                HttpUtil.sendError(resp, 400, "Rate must be a positive number");
+            rate = rate.replace(',', '.');
+            if (!rate.matches("\\d+(\\.\\d+)?")){
+                HttpUtil.sendError(resp, 400, "Курс введен неверно");
+                return;
+            }
+            BigDecimal parseDouble = new BigDecimal(rate).setScale(6, RoundingMode.HALF_UP);
+            if (parseDouble.compareTo(BigDecimal.ZERO) <= 0) {
+                HttpUtil.sendError(resp, 400, "Он должен быть больше нуля");
                 return;
             }
 

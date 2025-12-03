@@ -39,19 +39,19 @@ public class CurrenciesServlet extends HttpServlet {
             if (code == null || code.isBlank() ||
                 fullName == null || fullName.isBlank() ||
                 sign == null || sign.isBlank()) {
-                HttpUtil.sendError(resp, 400, "Fields 'code', 'fullName', 'sign' are empty");
+                HttpUtil.sendError(resp, 400, "Поля 'code', 'fullName', 'sign' пустые");
                 return;
             }
 
             code = code.trim().toUpperCase();
-            if (code.length() != 3){
-                HttpUtil.sendError(resp, 400, "Code length must be 3 letters");
+            if (!code.matches("^[A-Z]{3}$")){
+                HttpUtil.sendError(resp, 400, "Код валюты должен состоять из 3-х латинских букв");
                 return;
             }
 
             Currency existing = currencyDao.findByCode(code);
             if (existing != null) {
-                HttpUtil.sendError(resp, 409, "Currency with code =  " + code + " already exists");
+                HttpUtil.sendError(resp, 409, "Валюта с кодом =  " + code + " уже существует");
                 return;
             }
 
@@ -66,7 +66,6 @@ public class CurrenciesServlet extends HttpServlet {
             HttpUtil.sendJsonResponse(resp, 201, json);
 
         } catch (IOException e) {
-            e.printStackTrace();
             ErrorHandler.handle(resp, e);
         }
     }

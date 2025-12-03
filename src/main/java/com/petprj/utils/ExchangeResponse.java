@@ -3,6 +3,8 @@ package com.petprj.utils;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.petprj.model.Currency;
 
+import java.math.BigDecimal;
+
 @JsonPropertyOrder ({
         "baseCurrency",
         "targetCurrency",
@@ -14,16 +16,22 @@ public class ExchangeResponse {
 
     private Currency baseCurrency;
     private Currency targetCurrency;
-    private double rate;
-    private double amount;
-    private double result;
+    private BigDecimal rate;
+    private BigDecimal amount;
+    private BigDecimal result;
 
-    public ExchangeResponse(Currency baseCurrency, Currency targetCurrency, double rate, double amount, double result) {
+    public ExchangeResponse(Currency baseCurrency, Currency targetCurrency, BigDecimal rate, BigDecimal amount, BigDecimal result) {
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;
         this.rate = rate;
         this.amount = amount;
         this.result = result;
+    }
+
+    public ExchangeResponse(Currency baseCurrency, Currency targetCurrency, BigDecimal rate) {
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
+        this.rate = rate;
     }
 
     public ExchangeResponse() {
@@ -38,15 +46,15 @@ public class ExchangeResponse {
         return targetCurrency;
     }
 
-    public double getRate() {
+    public BigDecimal getRate() {
         return rate;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public double getResult() {
+    public BigDecimal getResult() {
         return result;
     }
 }

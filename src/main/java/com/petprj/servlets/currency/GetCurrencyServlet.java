@@ -22,16 +22,21 @@ public class GetCurrencyServlet extends HttpServlet {
         try {
             String pathInfo = req.getPathInfo();
             if(pathInfo == null || pathInfo.equals("/")) {
-                HttpUtil.sendJsonResponse(resp, 400, "{\"error\": \"Currency code is missing\"}");
+                HttpUtil.sendError(resp, 400, "Не введен код валюты");
                 return;
             }
 
-            String code = pathInfo.substring(1).toLowerCase();
+            String code = pathInfo.substring(1).toUpperCase();
+
+            if (!code.matches("^[A-Z]{3}$")) {
+                HttpUtil.sendError(resp, 400, "Код валюты введен неверно");
+                return;
+            }
 
             Currency currency = currencyDao.findByCode(code);
 
-            if(currency == null) {
-                HttpUtil.sendJsonResponse(resp, 400, "{\"error\": \"Currency not found\"}");
+            if (currency == null) {
+                HttpUtil.sendError(resp, 404, "Валюта не найдена");
                 return;
             }
 
