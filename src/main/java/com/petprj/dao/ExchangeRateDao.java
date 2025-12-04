@@ -144,15 +144,15 @@ public class ExchangeRateDao implements Dao <Integer, ExchangeRate> {
 
         Currency base = new Currency(
                 resultSet.getInt("bc_id"),
-                resultSet.getString("bc_fullName"),
                 resultSet.getString("bc_code"),
+                resultSet.getString("bc_fullName"),
                 resultSet.getString("bc_sign")
         );
 
         Currency target = new Currency(
                 resultSet.getInt("tc_id"),
-                resultSet.getString("tc_fullName"),
                 resultSet.getString("tc_code"),
+                resultSet.getString("tc_fullName"),
                 resultSet.getString("tc_sign")
         );
 

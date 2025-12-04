@@ -34,24 +34,29 @@ public class ExchangeServlet extends HttpServlet {
             String amountParam = req.getParameter("amount");
 
             if (from == null || to == null || amountParam == null) {
-                HttpUtil.sendError(resp, 400, "Incorrect parameters");
+                HttpUtil.sendError(resp, 400, "Поле Amount пустое");
                 return;
             }
             from = from.trim().toUpperCase();
             to = to.trim().toUpperCase();
 
             if (!from.matches("^[A-Z]{3}$") || !to.matches("^[A-Z]{3}$")) {
-                HttpUtil.sendError(resp, 400, "Incorrect currency");
+                HttpUtil.sendError(resp, 400, "Валюты введены неверно");
+                return;
+            }
+
+            if (from.equals(to)){
+                HttpUtil.sendError(resp, 400, "Валюта base и валюта target одинаковые");
                 return;
             }
             String amountParamStr = amountParam.trim().replace(",", ".");
             if (!amountParamStr.matches("\\d+(\\.\\d+)?")) {
-                HttpUtil.sendError(resp, 400, "Incorrect amount");
+                HttpUtil.sendError(resp, 400, "Неверно введен курс");
                 return;
             }
             BigDecimal parsedAmount = new BigDecimal(amountParamStr).setScale(6, RoundingMode.HALF_UP);
             if (parsedAmount.compareTo(BigDecimal.ZERO) <= 0) {
-                HttpUtil.sendError(resp, 400, "Incorrect amount");
+                HttpUtil.sendError(resp, 400, "Курс должен быть больше нуля");
                 return;
             }
 
@@ -61,7 +66,7 @@ public class ExchangeServlet extends HttpServlet {
                 fromCode = currencyDao.findByCode(from);
                 toCode = currencyDao.findByCode(to);
             } catch (NotFoundException e) {
-                HttpUtil.sendError(resp, 404, "Currency not found");
+                HttpUtil.sendError(resp, 404, "Валюта не найдена");
                 return;
             }
 
@@ -79,7 +84,7 @@ public class ExchangeServlet extends HttpServlet {
             if (rate == null) {
                 Currency usdCurrency = currencyDao.findByCode("USD");
                 if (usdCurrency == null) {
-                    HttpUtil.sendError(resp, 404, "Currency not found");
+                    HttpUtil.sendError(resp, 404, "Валюта не найдена\"");
                     return;
                 }
                 int usdId = usdCurrency.getId();
@@ -104,7 +109,7 @@ public class ExchangeServlet extends HttpServlet {
             }
 
             if (rate == null) {
-                HttpUtil.sendError(resp, 404, "Rate not found");
+                HttpUtil.sendError(resp, 404, "Курс не найден");
                 return;
             }
 
@@ -113,6 +118,7 @@ public class ExchangeServlet extends HttpServlet {
             ExchangeResponse responseObj = new ExchangeResponse(fromCode, toCode, rate, parsedAmount, result);
 
             String json = JsonUtil.toJson(responseObj);
+
             HttpUtil.sendJsonResponse(resp, 201, json);
 
         } catch (IOException e) {

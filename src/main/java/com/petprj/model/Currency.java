@@ -8,13 +8,13 @@ public class Currency {
 
     private Integer id;
     private String code;
-    private String fullName;
+    private String name;
     private String sign;
 
-    public Currency(Integer id, String code, String fullName, String sign) {
+    public Currency(Integer id, String code, String name, String sign) {
         this.id = id;
         this.code = code;
-        this.fullName = fullName;
+        this.name = name;
         this.sign = sign;
     }
 
@@ -26,12 +26,12 @@ public class Currency {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Currency currency = (Currency) o;
-        return Objects.equals(id, currency.id) && Objects.equals(code, currency.code) && Objects.equals(fullName, currency.fullName) && Objects.equals(sign, currency.sign);
+        return Objects.equals(id, currency.id) && Objects.equals(code, currency.code) && Objects.equals(name, currency.name) && Objects.equals(sign, currency.sign);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, fullName, sign);
+        return Objects.hash(id, code, name, sign);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class Currency {
         return "Currency{" +
                "id=" + id +
                ", code='" + code + '\'' +
-               ", fullName='" + fullName + '\'' +
+               ", fullName='" + name + '\'' +
                ", sign='" + sign + '\'' +
                '}';
     }
@@ -56,8 +56,8 @@ public class Currency {
         return code;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
     public String getSign() {
@@ -68,8 +68,8 @@ public class Currency {
         this.code = code;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setSign(String sign) {

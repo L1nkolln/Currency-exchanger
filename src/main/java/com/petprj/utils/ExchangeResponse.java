@@ -18,14 +18,14 @@ public class ExchangeResponse {
     private Currency targetCurrency;
     private BigDecimal rate;
     private BigDecimal amount;
-    private BigDecimal result;
+    private BigDecimal convertedAmount;
 
-    public ExchangeResponse(Currency baseCurrency, Currency targetCurrency, BigDecimal rate, BigDecimal amount, BigDecimal result) {
+    public ExchangeResponse(Currency baseCurrency, Currency targetCurrency, BigDecimal rate, BigDecimal amount, BigDecimal convertedAmount) {
         this.baseCurrency = baseCurrency;
         this.targetCurrency = targetCurrency;
         this.rate = rate;
         this.amount = amount;
-        this.result = result;
+        this.convertedAmount = convertedAmount;
     }
 
     public ExchangeResponse(Currency baseCurrency, Currency targetCurrency, BigDecimal rate) {
@@ -54,7 +54,7 @@ public class ExchangeResponse {
         return amount;
     }
 
-    public BigDecimal getResult() {
-        return result;
+    public BigDecimal getConvertedAmount() {
+        return convertedAmount;
     }
 }

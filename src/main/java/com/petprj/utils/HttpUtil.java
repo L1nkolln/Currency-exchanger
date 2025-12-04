@@ -19,7 +19,7 @@ public class HttpUtil {
         resp.setStatus(status);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write("{\"error\": \"" + message + "\"}");
+        resp.getWriter().write("{\"message\": \"" + message + "\"}");
     }
 
     public static String readBody(HttpServletRequest req) throws IOException {

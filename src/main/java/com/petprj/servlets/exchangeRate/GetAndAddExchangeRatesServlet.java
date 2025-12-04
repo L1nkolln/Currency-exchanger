@@ -47,7 +47,7 @@ public class GetAndAddExchangeRatesServlet extends HttpServlet {
             if (baseCurrencyCode == null || baseCurrencyCode.isBlank() ||
                 targetCurrencyCode == null || targetCurrencyCode.isBlank() ||
                 rate == null || rate.isBlank()) {
-                HttpUtil.sendError(resp, 400, "Поля 'baseCurrencyCode', 'targetCurrencyCode', 'rate' пустые");
+                HttpUtil.sendError(resp, 400, "Поля 'baseCurrency', 'targetCurrency', 'rate' пустые");
                 return;
             }
 
@@ -94,14 +94,20 @@ public class GetAndAddExchangeRatesServlet extends HttpServlet {
                 HttpUtil.sendError(resp, 400, "Курс должен быть больше нуля");
                 return;
             }
-            BigDecimal parseDouble = new BigDecimal(rate).setScale(6, RoundingMode.HALF_UP);
-            if (parseDouble.compareTo(BigDecimal.ZERO) <= 0){
+            BigDecimal parseRate = new BigDecimal(rate).setScale(6, RoundingMode.HALF_UP);
+            if (parseRate.compareTo(BigDecimal.ZERO) <= 0){
                 HttpUtil.sendError(resp, 400, "Курс не может быть нулем");
                 return;
             }
 
-            ExchangeResponse responseObj = new ExchangeResponse(baseCode, targetCode, parseDouble);
-            String json = JsonUtil.toJson(responseObj);
+//            ExchangeResponse responseObj = new ExchangeResponse(baseCode, targetCode, parseRate);
+//            String json = JsonUtil.toJson(responseObj);
+
+            ExchangeRate created = exchangeRateDao.create(
+                    new ExchangeRate(0, baseCode.getId(), targetCode.getId(), parseRate));
+            created.setBaseCurrency(baseCode);
+            created.setTargetCurrency(targetCode);
+            String json = JsonUtil.toJson(created);
             HttpUtil.sendJsonResponse(resp, 201, json);
         } catch (Exception e) {
             ErrorHandler.handle(resp, e);

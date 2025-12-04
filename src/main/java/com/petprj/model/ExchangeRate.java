@@ -59,7 +59,7 @@ public class ExchangeRate {
 
     public void setRate(BigDecimal rate) {
         if (rate != null) {
-            this.rate = rate.setScale(2, BigDecimal.ROUND_HALF_UP);
+            this.rate = rate.setScale(6, BigDecimal.ROUND_HALF_UP);
         }else {
             this.rate = null;
         }

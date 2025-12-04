@@ -81,7 +81,7 @@ public class CurrencyDao implements Dao<Integer, Currency> {
 
     private static final String UPDATE = """
             UPDATE currency
-            SET full_name = ?, code = ?, sign = ? 
+            SET code = ?, full_name = ?,  sign = ?
             WHERE id = ?
             """;
 
@@ -89,8 +89,8 @@ public class CurrencyDao implements Dao<Integer, Currency> {
     public void update(Currency entity) {
         try (Connection connection = DatabaseManager.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(UPDATE)) {
-            preparedStatement.setString(1, entity.getFullName());
-            preparedStatement.setString(2, entity.getCode());
+            preparedStatement.setString(1, entity.getCode());
+            preparedStatement.setString(2, entity.getName());
             preparedStatement.setString(3, entity.getSign());
             preparedStatement.setInt(4, entity.getId());
             int updatedRows = preparedStatement.executeUpdate();
@@ -113,7 +113,7 @@ public class CurrencyDao implements Dao<Integer, Currency> {
         try (Connection connection = DatabaseManager.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement(CREATE_N, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, entity.getCode());
-            preparedStatement.setString(2, entity.getFullName());
+            preparedStatement.setString(2, entity.getName());
             preparedStatement.setString(3, entity.getSign());
             int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) {
@@ -129,7 +129,7 @@ public class CurrencyDao implements Dao<Integer, Currency> {
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }
-        return new Currency(idGen, entity.getCode(), entity.getFullName(), entity.getSign());
+        return new Currency(idGen, entity.getCode(), entity.getName(), entity.getSign());
     }
 
     private Currency buildCurrency(ResultSet resultSet) throws SQLException {

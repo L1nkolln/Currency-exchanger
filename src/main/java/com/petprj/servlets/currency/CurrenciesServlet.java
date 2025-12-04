@@ -32,14 +32,14 @@ public class CurrenciesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            String fullName = req.getParameter("fullName");
             String code = req.getParameter("code");
+            String fullName = req.getParameter("name");
             String sign = req.getParameter("sign");
 
             if (code == null || code.isBlank() ||
                 fullName == null || fullName.isBlank() ||
                 sign == null || sign.isBlank()) {
-                HttpUtil.sendError(resp, 400, "Поля 'code', 'fullName', 'sign' пустые");
+                HttpUtil.sendError(resp, 400, "Поля 'code', 'name', 'sign' пустые");
                 return;
             }
 
@@ -57,7 +57,7 @@ public class CurrenciesServlet extends HttpServlet {
 
             Currency currency = new Currency();
             currency.setCode(code);
-            currency.setFullName(fullName.trim());
+            currency.setName(fullName.trim());
             currency.setSign(sign.trim());
 
             Currency created = currencyDao.create(currency);
