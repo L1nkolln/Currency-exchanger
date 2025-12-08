@@ -1,7 +1,7 @@
 ﻿# Проект Обмен валют
 
 Для подключения
-http://193.47.42.217:8080/currency-exchange/currencies
+http://193.47.42.217:8080/currency-exchange/
 
 Запросы
 
@@ -36,6 +36,7 @@ GET /exchange?from=BASE_CURRENCY_CODE&to=TARGET_CURRENCY_CODE&amount=$AMOUNT
 BASE_CURRENCY_CODE - код валюты 1
 TARGET_CURRENCY_CODE - код валюты 2
 AMOUNT - количество
+
 
 
 
