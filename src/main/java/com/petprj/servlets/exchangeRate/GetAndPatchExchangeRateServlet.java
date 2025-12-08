@@ -95,6 +95,12 @@ public class GetAndPatchExchangeRateServlet extends HttpServlet {
                 return;
             }
             BigDecimal parseDouble = new BigDecimal(rate).setScale(6, RoundingMode.HALF_UP);
+
+            if (parseDouble.compareTo(new BigDecimal(1_000_000)) > 0) {
+                HttpUtil.sendError(resp, 400, "курс слишком длинный");
+                return;
+            }
+
             if (parseDouble.compareTo(BigDecimal.ZERO) <= 0) {
                 HttpUtil.sendError(resp, 400, "Он должен быть больше нуля");
                 return;

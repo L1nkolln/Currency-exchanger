@@ -94,7 +94,18 @@ public class GetAndAddExchangeRatesServlet extends HttpServlet {
                 HttpUtil.sendError(resp, 400, "Курс должен быть больше нуля");
                 return;
             }
+            if (rate.length() > 8) {
+                HttpUtil.sendError(resp, 400, "Курс валют слишком длинный");
+                return;
+            }
+
             BigDecimal parseRate = new BigDecimal(rate).setScale(6, RoundingMode.HALF_UP);
+
+//            if (parseRate.compareTo(new BigDecimal(1_000_000)) < 0) {
+//                HttpUtil.sendError(resp, 400, "курс слишком длинный");
+//                return;
+//            }
+
             if (parseRate.compareTo(BigDecimal.ZERO) <= 0){
                 HttpUtil.sendError(resp, 400, "Курс не может быть нулем");
                 return;

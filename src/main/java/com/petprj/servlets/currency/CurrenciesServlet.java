@@ -49,6 +49,15 @@ public class CurrenciesServlet extends HttpServlet {
                 return;
             }
 
+            if (fullName.length() > 70){
+                HttpUtil.sendError(resp, 400, "Наименование валюты слишком длинное");
+                return;
+            }
+
+            if (sign.length() > 7){
+                HttpUtil.sendError(resp, 400, "Знак валюты слишком длинный");
+            }
+
             Currency existing = currencyDao.findByCode(code);
             if (existing != null) {
                 HttpUtil.sendError(resp, 409, "Валюта с кодом =  " + code + " уже существует");
